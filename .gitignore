@@ -1,3 +1,5 @@
 /venv
+/yolov5
+yolov5s.pt
 .env
 mee.jpg
