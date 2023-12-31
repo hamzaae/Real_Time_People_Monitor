@@ -3,19 +3,19 @@ import torch
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x, custom
 
-# # Images
-# # img = 'https://ultralytics.com/images/zidane.jpg'  # or file, Path, PIL, OpenCV, numpy, list
-# img = 'mee.jpg'  # or file, Path, PIL, OpenCV, numpy, list
-# # Inference
-# results = model(img)
+# # # Images
+# # # img = 'https://ultralytics.com/images/zidane.jpg'  # or file, Path, PIL, OpenCV, numpy, list
+# # img = 'mee.jpg'  # or file, Path, PIL, OpenCV, numpy, list
+# # # Inference
+# # results = model(img)
 
-# # Results
-# results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
+# # # Results
+# # results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
 
 
-#------------------------------------------------------------
-# from IPython import display
-# display.clear_output()
+# #------------------------------------------------------------
+# # from IPython import display
+# # display.clear_output()
 
 import detectron2
 import supervision as sv
@@ -100,28 +100,34 @@ box_annotators = [
     in range(len(polygons))
 ]
 
-# extract video frame
-generator = sv.get_video_frames_generator(MARKET_SQUARE_VIDEO_PATH)
-iterator = iter(generator)
-frame = next(iterator)
+def process_frame(frame: np.ndarray, i) -> np.ndarray:
+    print(i, '----------------')
+    # detect
+    results = model(frame, size=1280)
+    detections = sv.Detections.from_yolov5(results)
+    detections = detections[(detections.class_id == 0) & (detections.confidence > 0.5)]
 
-# detect
-results = model(frame, size=1280)
-detections = sv.Detections.from_yolov5(results)
-detections = detections[(detections.class_id == 0) & (detections.confidence > 0.5)]
+    for zone, zone_annotator, box_annotator in zip(zones, zone_annotators, box_annotators):
+        mask = zone.trigger(detections=detections)
+        detections_filtered = detections[mask]
+        print(f"zone {box_annotator} : {len(detections_filtered)}")
+        frame = box_annotator.annotate(scene=frame, detections=detections_filtered, skip_label=True)
+        frame = zone_annotator.annotate(scene=frame)
 
-for zone, zone_annotator, box_annotator in zip(zones, zone_annotators, box_annotators):
-    mask = zone.trigger(detections=detections)
-    detections_filtered = detections[mask]
-    frame = box_annotator.annotate(scene=frame, detections=detections_filtered, skip_label=True)
-    frame = zone_annotator.annotate(scene=frame)
+    return frame
 
-
-
-# Display the annotated image
-plt.imshow(frame)
-plt.axis('off')
-plt.show()
+sv.process_video(source_path=MARKET_SQUARE_VIDEO_PATH, target_path=f"video-result.mp4", callback=process_frame)
 
 
-# plt.savefig('foo.png')
+
+
+
+# # Display the annotated image
+# plt.imshow(frame)
+# plt.axis('off')
+# plt.show()
+
+
+# # plt.savefig('foo.png')
+
+
