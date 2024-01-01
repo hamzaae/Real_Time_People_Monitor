@@ -2,6 +2,7 @@ version: '3'
 services:
   clickhouse:
     image: yandex/clickhouse-server
+    container_name: my-clickhouse
     ports:
       - "8123:8123"
     volumes:
@@ -9,6 +10,7 @@ services:
 
   redis:
     image: redis
+    container_name: my-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -17,6 +19,7 @@ services:
 
   postgres:
     image: postgres
+    container_name: my-postgres
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: myuser
