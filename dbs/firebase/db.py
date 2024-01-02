@@ -3,7 +3,7 @@ from firebase_admin import db, credentials
 import os
 
 cred = credentials.Certificate("dbs/firebase/credentials.json")
-firebaseURL = os.getenv("FIREBASE_URL")
+firebaseURL = "https://rtdbpc-default-rtdb.firebaseio.com/"
 
 firebase_admin.initialize_app(cred, {"databaseURL": firebaseURL})
 

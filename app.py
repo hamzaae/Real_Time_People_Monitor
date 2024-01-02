@@ -22,6 +22,31 @@ import supervision as sv
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+from time import time
+from kafka import KafkaProducer
+
+# Kafka broker details
+bootstrap_servers = '127.0.0.1:9092'  # Use the actual IP address if needed
+
+# Create a Kafka producer
+producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
+
+# Kafka topic to which the message will be sent
+kafka_topic = 'rtdbTopic'  # Match the Kafka topic used with kafka-console-producer.sh
+
+def send_message(message):
+    try:
+        # Send a message to the Kafka topic
+        producer.send(kafka_topic, value=str(message).encode('utf-8'))
+        print(f"Message sent to Kafka topic: {kafka_topic}")
+    except Exception as e:
+        print(f"Error sending message to Kafka: {e}")
+
+
+
+
+
 MARKET_SQUARE_VIDEO_PATH = 'video.mp4'
 
 
@@ -100,19 +125,24 @@ box_annotators = [
     in range(len(polygons))
 ]
 
+z_names = ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'zone_5', 'zone_6', 'zone_7']
+
 def process_frame(frame: np.ndarray, i) -> np.ndarray:
     print(i, '----------------')
     # detect
     results = model(frame, size=1280)
     detections = sv.Detections.from_yolov5(results)
     detections = detections[(detections.class_id == 0) & (detections.confidence > 0.5)]
-
-    for zone, zone_annotator, box_annotator in zip(zones, zone_annotators, box_annotators):
+    d = {}
+    d['time'] = time()
+    for zone, zone_annotator, box_annotator, z_name in zip(zones, zone_annotators, box_annotators, z_names):
         mask = zone.trigger(detections=detections)
         detections_filtered = detections[mask]
-        print(f"zone {box_annotator} : {len(detections_filtered)}")
+        d[z_name] = len(detections_filtered)
+        # print(f"zone {box_annotator} : {len(detections_filtered)}")
         frame = box_annotator.annotate(scene=frame, detections=detections_filtered, skip_label=True)
         frame = zone_annotator.annotate(scene=frame)
+    send_message(d)
 
     return frame
 
