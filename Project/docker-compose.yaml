@@ -1,0 +1,30 @@
+version: '3'
+services:
+  clickhouse:
+    image: yandex/clickhouse-server
+    container_name: my-clickhouse
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./Docker-init-scripts/clickhouse:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis
+    container_name: my-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./Docker-init-scripts/redis:/docker-entrypoint-initdb.d
+
+  postgres:
+    image: postgres
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./Docker-init-scripts/postgres:/docker-entrypoint-initdb.d
