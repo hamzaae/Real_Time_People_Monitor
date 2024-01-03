@@ -1,53 +1,14 @@
 import torch
+import supervision as sv
+import numpy as np
+
+from time import localtime, strftime, time
+from producer import send_message
 
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x, custom
 
-# # # Images
-# # # img = 'https://ultralytics.com/images/zidane.jpg'  # or file, Path, PIL, OpenCV, numpy, list
-# # img = 'mee.jpg'  # or file, Path, PIL, OpenCV, numpy, list
-# # # Inference
-# # results = model(img)
-
-# # # Results
-# # results.print()  # or .show(), .save(), .crop(), .pandas(), etc.
-
-
-# #------------------------------------------------------------
-# # from IPython import display
-# # display.clear_output()
-
-import detectron2
-import supervision as sv
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-from time import time
-from kafka import KafkaProducer
-
-# Kafka broker details
-bootstrap_servers = '127.0.0.1:9092'  # Use the actual IP address if needed
-
-# Create a Kafka producer
-producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
-
-# Kafka topic to which the message will be sent
-kafka_topic = 'rtdbTopic'  # Match the Kafka topic used with kafka-console-producer.sh
-
-def send_message(message):
-    try:
-        # Send a message to the Kafka topic
-        producer.send(kafka_topic, value=str(message).encode('utf-8'))
-        print(f"Message sent to Kafka topic: {kafka_topic}")
-    except Exception as e:
-        print(f"Error sending message to Kafka: {e}")
-
-
-
-
-
-MARKET_SQUARE_VIDEO_PATH = 'video.mp4'
+MARKET_SQUARE_VIDEO_PATH = 'media/video.mp4'
 
 
 colors = sv.ColorPalette.default()
@@ -134,30 +95,19 @@ def process_frame(frame: np.ndarray, i) -> np.ndarray:
     detections = sv.Detections.from_yolov5(results)
     detections = detections[(detections.class_id == 0) & (detections.confidence > 0.5)]
     d = {}
-    d['time'] = time()
+    current_time = time()
+    formatted_time = strftime("%Y-%m-%d %H:%M:%S", localtime(current_time))
+    d['time'] = formatted_time
     for zone, zone_annotator, box_annotator, z_name in zip(zones, zone_annotators, box_annotators, z_names):
         mask = zone.trigger(detections=detections)
         detections_filtered = detections[mask]
         d[z_name] = len(detections_filtered)
-        # print(f"zone {box_annotator} : {len(detections_filtered)}")
         frame = box_annotator.annotate(scene=frame, detections=detections_filtered, skip_label=True)
         frame = zone_annotator.annotate(scene=frame)
-    send_message(d)
+    # send_message(d, "rtdbTopic")
+    print(d)
 
     return frame
 
 sv.process_video(source_path=MARKET_SQUARE_VIDEO_PATH, target_path=f"video-result.mp4", callback=process_frame)
-
-
-
-
-
-# # Display the annotated image
-# plt.imshow(frame)
-# plt.axis('off')
-# plt.show()
-
-
-# # plt.savefig('foo.png')
-
 
