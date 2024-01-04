@@ -2,7 +2,7 @@ from kafka import KafkaProducer
 from kafka import KafkaConsumer
 
 def consume_messages(kafka_topic):
-    bootstrap_servers = '127.0.0.1:9092'
+    bootstrap_servers = 'kafka:9092'
     consumer_group_id = 'rtdb_consumer_group'  
     consumer = KafkaConsumer(kafka_topic,
                              group_id=consumer_group_id,
@@ -22,7 +22,7 @@ def consume_messages(kafka_topic):
         print("Kafka consumer closed")
 
 def send_message(message, kafka_topic):
-    bootstrap_servers = '127.0.0.1:9092' 
+    bootstrap_servers = 'kafka:9092' 
     producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
     try:
         # Send a message to the Kafka topic
@@ -33,3 +33,5 @@ def send_message(message, kafka_topic):
     producer.close()
     print("Kafka producer closed")
 
+
+# consume_messages("rtdbTopic")

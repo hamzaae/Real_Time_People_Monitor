@@ -5,10 +5,11 @@ import numpy as np
 from time import localtime, strftime, time
 from app.kafka_script import send_message
 
-# Model
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x, custom
 
-MARKET_SQUARE_VIDEO_PATH = 'media/video.mp4'
+# Model
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload=True)  # or yolov5m, yolov5l, yolov5x, custom
+
+MARKET_SQUARE_VIDEO_PATH = '/media/video.mp4'
 
 
 colors = sv.ColorPalette.default()
@@ -104,8 +105,8 @@ def process_frame(frame: np.ndarray, i) -> np.ndarray:
         d[z_name] = len(detections_filtered)
         frame = box_annotator.annotate(scene=frame, detections=detections_filtered, skip_label=True)
         frame = zone_annotator.annotate(scene=frame)
-    # send_message(d, "rtdbTopic")
-    print(d)
+    send_message(d, "rtdbTopic")
+    #print(d)
 
     return frame
 

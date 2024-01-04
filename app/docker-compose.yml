@@ -20,6 +20,8 @@ services:
       - "8080:8080"
     tty: true
     stdin_open: true
+    volumes:
+      - ./app:/app
     networks:
       - rtdbNetwork
 
@@ -48,16 +50,20 @@ services:
   #   networks:
   #     - rtdbNetwork
 
-  # yolov5:
-  #   image: ultralytics/yolov5
-  #   container_name: yolov5
-  #   ports:
-  #     - "9093:9093"
-  #   volumes:
-  #     - ./yolov5:/yolov5  
-  #   networks:
-  #     - rtdbNetwork
-  #   command: python3 app/app.py
+  yolov5:
+    image: ultralytics/yolov5
+    container_name: yolov5
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../app:/app
+      - ../media:/media
+    networks:
+      - rtdbNetwork
+    ipc: "host"
+    stdin_open: true
+    tty: true
+    
 
 networks:
   rtdbNetwork:
