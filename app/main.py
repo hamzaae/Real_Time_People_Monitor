@@ -3,7 +3,7 @@ import supervision as sv
 import numpy as np
 
 from time import localtime, strftime, time
-from producer import send_message
+from app.kafka_script import send_message
 
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x, custom

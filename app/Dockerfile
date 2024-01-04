@@ -1,7 +1,9 @@
-FROM ubuntu:20.04
+FROM ubuntu
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /rtdbpc
+
+COPY . .
 
 # Install essential tools and sudo
 RUN apt-get update && \
@@ -9,6 +11,7 @@ RUN apt-get update && \
     build-essential \
     curl \
     wget \
+    nano \
     git \
     sudo \
     && rm -rf /var/lib/apt/lists/*
@@ -23,6 +26,10 @@ RUN apt-get update && \
 # Set up a non-root user with sudo privileges
 RUN useradd -ms /bin/bash dockeruser && \
     usermod -aG sudo dockeruser
+
+RUN pip3 install -r requirements.txt
+RUN pip3 install -r yolov5/requirements.txt
+RUN pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
 
 # Set password for the user (replace 'password' with your desired password)
 RUN echo 'dockeruser:password' | chpasswd

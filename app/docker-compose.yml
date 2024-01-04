@@ -38,15 +38,26 @@ services:
     networks:
       - rtdbNetwork
 
-  python:
-    image: python:3.11
-    container_name: app
-    volumes:
-      - ./python:/python
-    depends_on:
-      - kafka
-    networks:
-      - rtdbNetwork
+  # python:
+  #   image: python:3.11
+  #   container_name: app
+  #   volumes:
+  #     - ./python:/python
+  #   depends_on:
+  #     - kafka
+  #   networks:
+  #     - rtdbNetwork
+
+  # yolov5:
+  #   image: ultralytics/yolov5
+  #   container_name: yolov5
+  #   ports:
+  #     - "9093:9093"
+  #   volumes:
+  #     - ./yolov5:/yolov5  
+  #   networks:
+  #     - rtdbNetwork
+  #   command: python3 app/app.py
 
 networks:
   rtdbNetwork:
