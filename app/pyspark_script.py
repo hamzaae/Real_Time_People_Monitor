@@ -10,7 +10,7 @@ spark = SparkSession.builder.appName("rtdbpc").getOrCreate()
 # data.printSchema()
 
 def process_data(data_path):
-    data = spark.read.json(data_path)
+    data = spark.read.format('json').load(data_path)
 
     if "time" in data.columns:
         data = data.withColumn("time", col("time").cast("timestamp"))
