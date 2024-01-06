@@ -3,9 +3,9 @@ from pyhive import hive
 
 
 def connect_to_hive():
-    hive_host = 'localhost'
+    hive_host = 'localhos'
     hive_port = 10000
-    hive_database = 'rtdbProject'  
+    hive_database = 'rtdbpcdb'  
 
     conn = hive.Connection(
         host=hive_host,
@@ -19,7 +19,7 @@ def connect_to_hive():
 
 def celect_from_hive(conn):
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM table') 
+    cursor.execute('SELECT * FROM your_hive_table') 
     results = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -38,3 +38,7 @@ def insert_into_hive(conn, data):
     finally:
         cursor.close()
         conn.close()
+
+conn = connect_to_hive()
+results = celect_from_hive(conn)
+print("DONE-----------------------------------------")

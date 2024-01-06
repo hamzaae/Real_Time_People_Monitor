@@ -18,17 +18,18 @@ services:
       - "50070:50070"
       - "8088:8088"
       - "8080:8080"
+      - "4040:4040"
     tty: true
     stdin_open: true
     volumes:
-      - ../app:app
+      - ../app:/myapp
     networks:
       - rtdbNetwork
-    # command: >
-    #   bash -c "
-    #     apt-get update &&
-    #     apt-get install -y python3-pip &&
-    #     pip3 install --no-cache-dir -r app/requirements.txt"
+    command: >
+      bash -c "
+        apt-get update &&
+        apt-get install -y python3-pip &&
+        pip3 install --no-cache-dir kafka-python "
 
   kafka:
     image: wurstmeister/kafka
@@ -52,13 +53,30 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ../app:app
-      - ../media:media
+      - ../app:/myapp
+      - ../media:/mymedia
     networks:
       - rtdbNetwork
     ipc: "host"
     stdin_open: true
     tty: true
+    command: >
+      bash -c "
+        pip3 install --no-cache-dir kafka-python "
+
+  cassandra_db:
+    image: cassandra:latest
+    container_name: cassandra
+    hostname: cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=100M
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+    networks:
+      - rtdbNetwork
     
 
 networks:

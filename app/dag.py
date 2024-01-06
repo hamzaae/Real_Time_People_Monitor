@@ -24,7 +24,7 @@ dag = DAG(
     'batch_dag',
     default_args=default_args,
     description='DAG for batch layer data processing',
-    schedule_interval=timedelta(minutes=1),
+    schedule_interval=timedelta(minutes=2),
 )
 
 # Define an Airflow task to execute the data processing and upload function

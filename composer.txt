@@ -146,3 +146,9 @@ kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic rtdbTopic
 
 kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic rtdbTopic --from-beginning
 
+
+
+------------------------------------------
+
+spark-submit --conf spark.pyspark.python=python3 --conf spark.pyspark.driver.python=python3 your_script.py
+
