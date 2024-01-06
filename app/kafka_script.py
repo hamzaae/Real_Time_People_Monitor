@@ -1,3 +1,4 @@
+import json
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
 
@@ -9,7 +10,7 @@ def consume_messages(kafka_topic):
                              bootstrap_servers=bootstrap_servers,
                              auto_offset_reset='earliest', 
                              enable_auto_commit=True,
-                             value_deserializer=lambda x: x.decode('utf-8'))
+                             value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
     try:
         for message in consumer:
@@ -26,7 +27,7 @@ def send_message(message, kafka_topic):
     producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
     try:
         # Send a message to the Kafka topic
-        producer.send(kafka_topic, value=str(message).encode('utf-8'))
+        producer.send(kafka_topic, value=json.dumps(message).encode('utf-8'))
         print(f"Message sent to Kafka topic: {kafka_topic}")
     except Exception as e:
         print(f"Error sending message to Kafka: {e}")
