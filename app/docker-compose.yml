@@ -18,19 +18,12 @@ services:
       - "50070:50070"
       - "8088:8088"
       - "8080:8080"
-      - "4040:4040"
     volumes:
       - ../app:/myapp 
-    # entrypoint: ["bash", "/myapp/init-script/hadoop-entrypoint.sh"]
     tty: true
     stdin_open: true
     networks:
       - rtdbNetwork
-    # command: >
-    #   bash -c "
-    #     apt-get update &&
-    #     apt-get install -y python3-pip &&
-    #     pip3 install --no-cache-dir kafka-python "
 
   kafka:
     image: wurstmeister/kafka
@@ -47,7 +40,6 @@ services:
     networks:
       - rtdbNetwork
 
-
   yolov5:
     image: ultralytics/yolov5
     container_name: yolov5
@@ -61,9 +53,6 @@ services:
     ipc: "host"
     stdin_open: true
     tty: true
-    # command: >
-    #   bash -c "
-    #     pip3 install --no-cache-dir kafka-python "
 
   cassandra_db:
     image: cassandra:latest
@@ -76,72 +65,68 @@ services:
       - HEAP_NEWSIZE=100M
       - CASSANDRA_USERNAME=cassandra
       - CASSANDRA_PASSWORD=cassandra
-    # volumes:
-    #   - ./init-script:/docker-entrypoint-initdb.d
-    # entrypoint: ["bash", "/docker-entrypoint-initdb.d/cassandra-entrypoint.sh"]
     networks:
       - rtdbNetwork
 
-  webserver:
-    image: apache/airflow:2.6.0-python3.9
-    command: webserver
-    entrypoint: ['/opt/airflow/script/entrypoint.sh']
-    depends_on:
-      - postgres
-    environment:
-      - LOAD_EX=n
-      - EXECUTOR=Sequential
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
-    logging:
-      options:
-        max-size: 10m
-        max-file: "3"
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./init-script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
-      - ../requirements.txt:/opt/airflow/requirements.txt
-    ports:
-      - "8081:8080"
-    healthcheck:
-      test: ['CMD-SHELL', "[ -f /opt/airflow/airflow-webserver.pid ]"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-    networks:
-      - rtdbNetwork
+  # webserver:
+  #   image: apache/airflow:2.6.0-python3.9
+  #   command: webserver
+  #   entrypoint: ['/opt/airflow/script/entrypoint.sh']
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     - LOAD_EX=n
+  #     - EXECUTOR=Sequential
+  #     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+  #     - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+  #   logging:
+  #     options:
+  #       max-size: 10m
+  #       max-file: "3"
+  #   volumes:
+  #     - ./dags:/opt/airflow/dags
+  #     - ./init-script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+  #     - ../requirements.txt:/opt/airflow/requirements.txt
+  #   ports:
+  #     - "8081:8080"
+  #   healthcheck:
+  #     test: ['CMD-SHELL', "[ -f /opt/airflow/airflow-webserver.pid ]"]
+  #     interval: 30s
+  #     timeout: 30s
+  #     retries: 3
+  #   networks:
+  #     - rtdbNetwork
 
-  scheduler:
-    image: apache/airflow:2.6.0-python3.9
-    depends_on:
-      webserver:
-        condition: service_healthy
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./init-script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
-      - ../requirements.txt:/opt/airflow/requirements.txt
-    environment:
-      - LOAD_EX=n
-      - EXECUTOR=Sequential
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
-    command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
-    networks:
-      - rtdbNetwork
+  # scheduler:
+  #   image: apache/airflow:2.6.0-python3.9
+  #   depends_on:
+  #     webserver:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./dags:/opt/airflow/dags
+  #     - ./init-script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+  #     - ../requirements.txt:/opt/airflow/requirements.txt
+  #   environment:
+  #     - LOAD_EX=n
+  #     - EXECUTOR=Sequential
+  #     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+  #     - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+  #   command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
+  #   networks:
+  #     - rtdbNetwork
 
-  postgres:
-    image: postgres:14.0
-    environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
-    logging:
-      options:
-        max-size: 10m
-        max-file: "3"
-    networks:
-      - rtdbNetwork
+  # postgres:
+  #   image: postgres:14.0
+  #   environment:
+  #     - POSTGRES_USER=airflow
+  #     - POSTGRES_PASSWORD=airflow
+  #     - POSTGRES_DB=airflow
+  #   logging:
+  #     options:
+  #       max-size: 10m
+  #       max-file: "3"
+  #   networks:
+  #     - rtdbNetwork
     
-
 networks:
   rtdbNetwork:

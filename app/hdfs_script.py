@@ -1,8 +1,45 @@
 from hdfs import InsecureClient
-from datetime import datetime
 import json
+from kafka import KafkaConsumer
 
 
+def consume_messages(kafka_topic):
+    bootstrap_servers = 'kafka:9092'
+    consumer_group_id = 'rtdb_consumer_group'  
+    consumer = KafkaConsumer(kafka_topic,
+                             group_id=consumer_group_id,
+                             bootstrap_servers=bootstrap_servers,
+                             auto_offset_reset='earliest', 
+                             enable_auto_commit=True,
+                             value_deserializer=lambda x: x.decode('utf-8'))
+
+    try:
+        # Iterate over the streamed data
+        current_minute = None
+        accumulated_data = []
+        for message in consumer:
+            data_point = eval(message.value)
+            timestamp_str = data_point.get('time', '')
+            data_point_minute = timestamp_str.split(':')[1]
+
+            if current_minute is None:
+                current_minute = data_point_minute
+            if current_minute != data_point_minute:
+                # Save the accumulated data to HDFS here
+                save_to_hdfs(accumulated_data, timestamp_str.replace(' ', '_').replace(':', '-').rsplit(':', 1)[0] + '-00')
+
+                print(len(accumulated_data), current_minute)
+                current_minute = data_point_minute
+                accumulated_data = []
+                accumulated_data.append(data_point)
+            else:
+                accumulated_data.append(data_point)
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        consumer.close()
+        print("Kafka consumer closed")
 
 def save_to_hdfs(data, timestamp):
     hdfs_host = 'localhost'
@@ -16,42 +53,5 @@ def save_to_hdfs(data, timestamp):
         hdfs_file.write(data_json)
     print(f"File uploaded to HDFS: {hdfs_file_path}")
 
-
-
-
-# Simulated streaming data
-streamed_data = [
-    {'time': '2024-01-03 13:15:48', 'zone_1': 8, 'zone_2': 6, 'zone_3': 3, 'zone_4': 3, 'zone_5': 2, 'zone_6': 1, 'zone_7': 8},
-    {'time': '2024-01-03 13:15:49', 'zone_1': 10, 'zone_2': 6, 'zone_3': 3, 'zone_4': 4, 'zone_5': 2, 'zone_6': 2, 'zone_7': 8},
-    {'time': '2024-01-03 13:15:51', 'zone_1': 9, 'zone_2': 6, 'zone_3': 2, 'zone_4': 4, 'zone_5': 1, 'zone_6': 2, 'zone_7': 9},
-    {'time': '2024-01-03 13:16:48', 'zone_1': 8, 'zone_2': 6, 'zone_3': 3, 'zone_4': 3, 'zone_5': 2, 'zone_6': 1, 'zone_7': 8},
-    {'time': '2024-01-03 13:16:49', 'zone_1': 10, 'zone_2': 6, 'zone_3': 3, 'zone_4': 4, 'zone_5': 2, 'zone_6': 2, 'zone_7': 8},
-    {'time': '2024-01-03 13:17:51', 'zone_1': 9, 'zone_2': 6, 'zone_3': 2, 'zone_4': 4, 'zone_5': 1, 'zone_6': 2, 'zone_7': 9},
-    {'time': '2024-01-03 13:17:55', 'zone_1': 9, 'zone_2': 6, 'zone_3': 2, 'zone_4': 4, 'zone_5': 1, 'zone_6': 2, 'zone_7': 9},
-    {'time': '2024-01-03 13:18:48', 'zone_1': 8, 'zone_2': 6, 'zone_3': 3, 'zone_4': 3, 'zone_5': 2, 'zone_6': 1, 'zone_7': 8},
-    {'time': '2024-01-03 13:18:49', 'zone_1': 10, 'zone_2': 6, 'zone_3': 3, 'zone_4': 4, 'zone_5': 2, 'zone_6': 2, 'zone_7': 8},
-    {'time': '2024-01-03 13:19:49', 'zone_1': 10, 'zone_2': 6, 'zone_3': 3, 'zone_4': 4, 'zone_5': 2, 'zone_6': 2, 'zone_7': 8}
-]
-
-
-# Iterate over the streamed data
-current_minute = None
-accumulated_data = []
-for data_point in streamed_data:
-    
-    timestamp_str = data_point.get('time', '')
-    data_point_minute = timestamp_str.split(':')[1]
-
-    if current_minute is None:
-        current_minute = data_point_minute
-    if current_minute != data_point_minute:
-        # Save the accumulated data to HDFS here
-        save_to_hdfs(accumulated_data, timestamp_str.replace(' ', '_').replace(':', '-').rsplit(':', 1)[0] + '-00')
-
-        print(len(accumulated_data), current_minute)
-        current_minute = data_point_minute
-        accumulated_data = []
-        accumulated_data.append(data_point)
-    else:
-        accumulated_data.append(data_point)
+consume_messages("rtdbTopic")
 

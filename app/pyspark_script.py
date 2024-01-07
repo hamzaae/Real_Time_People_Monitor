@@ -17,14 +17,16 @@ def process_data(data_path):
     else:
         raise ValueError("Column 'time' not found in the DataFrame.")
 
-    melted_df = data.selectExpr("time", "stack(4, 'zone_1', zone_1, 'zone_2', zone_2, 'zone_3', zone_3, 'zone_4', zone_4) as (zone, value)")
+    melted_df = data.selectExpr("time", "stack(7, 'zone_1', zone_1, 'zone_2', zone_2, \
+                                'zone_3', zone_3, 'zone_4', zone_4, 'zone_5', zone_5, \
+                                'zone_6', zone_6, 'zone_7', zone_7) as (zone, value)")
     melted_df = melted_df.withColumn("value", col("value").cast("double"))
     melted_df = melted_df.withColumn("id_zone", melted_df["zone"].substr(-1, 1).cast("int"))
     melted_df = melted_df.drop("zone")
 
     # Group by time and id_zone, then calculate max, mean, and total
-    result_df = melted_df.groupBy("time", "id_zone").agg({"value": "max", "value": "mean", "value": "sum"})
-    result_df = result_df.withColumnRenamed("max(value)", "max").withColumnRenamed("avg(value)", "mean").withColumnRenamed("sum(value)", "total")
+    result_df = melted_df.groupBy("time", "id_zone").agg({"value": "min", "value": "max", "value": "mean", "value": "sum"})
+    result_df = result_df.withColumnRenamed("min(value)", "min").withColumnRenamed("max(value)", "max").withColumnRenamed("avg(value)", "mean").withColumnRenamed("sum(value)", "total")
 
     # result_df.show()
     return result_df

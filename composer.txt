@@ -150,5 +150,5 @@ kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic rtdbTopic --
 
 ------------------------------------------
 
-spark-submit --conf spark.pyspark.python=python3 --conf spark.pyspark.driver.python=python3 your_script.py
+spark-submit --conf spark.pyspark.python=python3 --conf spark.pyspark.driver.python=python3 myapp/cassandra_script.py
 
