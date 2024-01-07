@@ -1,8 +1,7 @@
 /venv
 /yolov5
-yolov5s.pt
+/app/yolov5s.pt
 .env
-mee.jpg
 /dbs/firebase/credentials.json
 /BDDA/.idea
 /BDDA/__pycache__

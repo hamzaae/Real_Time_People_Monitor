@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators import PythonOperator
 import json
-from hive_script import save_to_hive
-from pyspark_script import process_data
+from app.scripts.hive_script import save_to_hive
+from app.scripts.pyspark_script import process_data
 
 def rtdbpc_dag():
     # Data processing code goes here

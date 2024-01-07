@@ -21,7 +21,7 @@ def send_message(message, kafka_topic):
 # Model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', force_reload=True)  # or yolov5m, yolov5l, yolov5x, custom
 
-MARKET_SQUARE_VIDEO_PATH = '/mymedia/video.mp4'
+MARKET_SQUARE_VIDEO_PATH = '/media/video.mp4'
 
 
 colors = sv.ColorPalette.default()
