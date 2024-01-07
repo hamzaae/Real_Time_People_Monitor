@@ -13,6 +13,7 @@ def create_spark_session():
         .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1") \
         .config('spark.cassandra.connection.host', 'cassandra') \
         .getOrCreate()
+    print("Spark session created!")
     return spark
 
 def process_data(data):
@@ -106,10 +107,12 @@ def consume_messages(kafka_topic):
 
     try:
         logging.info("Streaming is being started...")
+        print("Streaming is being started...")
         # Iterate over the streamed data
         current_minute = None
         accumulated_data = []
         for message in consumer:
+            print("Message received!---------------------------")
             data_point = eval(message.value)
             timestamp_str = data_point.get('time', '')
             data_point_minute = timestamp_str.split(':')[1]
@@ -122,7 +125,7 @@ def consume_messages(kafka_topic):
                 save_to_hdfs(accumulated_data, namee)
                 
                 # Process the accumulated data and save it to Cassandra
-                hdfs_file_name = 'data_{namee}.json'
+                hdfs_file_name = f'data_{namee}.json'
                 df = process_ini_data(hdfs_file_name)
                 df_stats = process_data(df)
                 df_stats.foreachPartition(lambda rows: process_partition(rows, create_cassandra_connection()))

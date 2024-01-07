@@ -42,9 +42,11 @@ def init_data(session):
                 INSERT INTO sparkstreams.zones(id_zone, name_zone)
                     VALUES (%s, %s)
             """, (id_zone, name_zone))
+            print(f"Data inserted for time: {name_zone}")
             logging.info(f"Data inserted for time: {name_zone}")
 
         except Exception as e:
+            print(f'Could not insert data due to {e}')
             logging.error(f'Could not insert data due to {e}')
 
 def create_cassandra_connection():
@@ -68,6 +70,7 @@ if cassandra_session is not None:
     create_keyspace(cassandra_session)
     create_table(cassandra_session)
     create_processed_table(cassandra_session)
+    init_data(cassandra_session)
     logging.info("Streaming is being started...")
 
 # Stop the Spark session
