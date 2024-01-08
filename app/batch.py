@@ -47,8 +47,8 @@ def insert_processed_data(session, row):
 
     try:
         session.execute("""
-            INSERT INTO spark_streams.stats(time, id_zone, zone_2, zone_3, 
-                zone_4, zone_5, zone_6, zone_7)
+            INSERT INTO spark_streams.stats(time, id_zone, min, max, 
+                mean, total)
                 VALUES (%s, %s, %s, %s, %s, %s)
         """, (time, id_zone, min, max, mean, total))
         logging.info(f"Data inserted for time: {time}")
