@@ -32,29 +32,41 @@ def process_data(data):
     result_df = melted_df.groupBy("time", "id_zone").agg({"value": "min", "value": "max", "value": "mean", "value": "sum"})
     result_df = result_df.withColumnRenamed("min(value)", "min").withColumnRenamed("max(value)", "max").withColumnRenamed("avg(value)", "mean").withColumnRenamed("sum(value)", "total")
 
-    # result_df.show()
+    result_df.show()
     return result_df
 
 def insert_processed_data(session, row):
     print("Inserting data...")
-
+    print("row : ",type(row))
+    print("row : ",row)
+    # print("row.min : ",row.min)
     time = row['time']
     id_zone = row['id_zone']
-    min = row['min']
-    max = row['max']
-    mean = row['mean']
-    total = row['total']
+    # max = row['max']
+    max = 0
+    print("max :",max)
+    # mean = row['mean']
+    mean = 0
+    print("mean :",mean)
+    # total = row['total']
+    total = 0
+    print("total :",mean)
+    # min = row['min'] 
+    min = 0
+    print("min : ",min)
 
     try:
         session.execute("""
-            INSERT INTO spark_streams.stats(time, id_zone, zone_2, zone_3, 
-                zone_4, zone_5, zone_6, zone_7)
+            INSERT INTO sparkstreams.stats(time, id_zone, min, max, 
+                mean, total)
                 VALUES (%s, %s, %s, %s, %s, %s)
         """, (time, id_zone, min, max, mean, total))
         logging.info(f"Data inserted for time: {time}")
+        print(f"Data inserted for time: {time}")
 
     except Exception as e:
         logging.error(f'Could not insert data due to {e}')
+        print(f'Could not insert data due to {e}')
 
 def create_cassandra_connection():
     try:
@@ -67,6 +79,8 @@ def create_cassandra_connection():
         return cas_session
     except Exception as e:
         logging.error(f"Could not create cassandra connection due to {e}")
+        print(f"Could not create cassandra connection due to {e}")
+
         return None
 
 def process_partition(rows, session):
@@ -79,7 +93,7 @@ def process_ini_data(file_name):
     df = spark.read.json(input_data)
 
     df_transformed = df.select("time", "zone_1", "zone_2", "zone_3", "zone_4", "zone_5", "zone_6", "zone_7")
-    # df_transformed.show()
+    df_transformed.show()
 
     return df_transformed
 
@@ -106,7 +120,7 @@ def consume_messages(kafka_topic):
                              value_deserializer=lambda x: x.decode('utf-8'))
 
     try:
-        logging.info("Streaming is being started...")
+        logging.info("Streaming is being started...")        
         print("Streaming is being started...")
         # Iterate over the streamed data
         current_minute = None
