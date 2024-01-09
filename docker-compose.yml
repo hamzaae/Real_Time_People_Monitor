@@ -72,10 +72,12 @@ services:
       - rtdbNetwork
 
   clickhouse:
-    image: yandex/clickhouse-server
+    # image: yandex/clickhouse-server
+    image: clickhouse/clickhouse-server
     container_name: clickhouse
     ports:
       - "8123:8123"
+      - "8002:9000"
     volumes:
       - ./app/init-script/clickhouse:/docker-entrypoint-initdb.d
       - ./app:/app
